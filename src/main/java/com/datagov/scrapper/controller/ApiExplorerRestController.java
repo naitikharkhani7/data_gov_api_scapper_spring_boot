@@ -33,14 +33,29 @@ public class ApiExplorerRestController {
     private final ApiTesterService apiTesterService;
     private final ObjectMapper objectMapper;
 
+    private volatile long cachedTotalCount = -1;
+    private volatile long lastCountCheckTime = 0;
+
+    private long getTotalCountCached() {
+        long now = System.currentTimeMillis();
+        if (cachedTotalCount == -1 || now - lastCountCheckTime > 10000) {
+            cachedTotalCount = apiResourceRepository.count();
+            lastCountCheckTime = now;
+        }
+        return cachedTotalCount;
+    }
+
     @GetMapping
     public ResponseEntity<Map<String, Object>> listResources(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sector,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "27") int size,
             @RequestParam(defaultValue = "id,desc") String sort
     ) {
+        if (size <= 0) size = 27;
+        if (page < 0) page = 0;
+
         String[] sortParts = sort.split(",");
         String sortProp = sortParts[0];
         Sort.Direction sortDir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -49,25 +64,29 @@ public class ApiExplorerRestController {
         boolean hasSearch = (search != null && !search.isBlank());
         boolean hasSector = (sector != null && !sector.isBlank() && !"ALL".equalsIgnoreCase(sector));
 
-        Page<ApiResourceEntity> resourcePage;
+        List<ApiResourceEntity> content;
+        long totalElements;
+
         if (hasSearch || hasSector) {
-            resourcePage = apiResourceRepository.searchResources(
-                    hasSearch ? search.trim() : null,
-                    hasSector ? sector.trim() : null,
-                    pageable
-            );
+            String s = hasSearch ? search.trim() : null;
+            String sec = hasSector ? sector.trim() : null;
+            content = apiResourceRepository.searchResourcesPaged(s, sec, pageable);
+            totalElements = apiResourceRepository.countFiltered(s, sec);
         } else {
-            resourcePage = apiResourceRepository.findAll(pageable);
+            content = apiResourceRepository.findPagedRecords(pageable);
+            totalElements = getTotalCountCached();
         }
 
+        int totalPages = totalElements == 0 ? 1 : (int) Math.ceil((double) totalElements / size);
+
         return ResponseEntity.ok(Map.of(
-                "content", resourcePage.getContent(),
-                "page", resourcePage.getNumber(),
-                "size", resourcePage.getSize(),
-                "totalElements", resourcePage.getTotalElements(),
-                "totalPages", resourcePage.getTotalPages(),
-                "first", resourcePage.isFirst(),
-                "last", resourcePage.isLast()
+                "content", content,
+                "page", page,
+                "size", size,
+                "totalElements", totalElements,
+                "totalPages", totalPages,
+                "first", page == 0,
+                "last", page >= totalPages - 1
         ));
     }
 

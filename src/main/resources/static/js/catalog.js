@@ -1,7 +1,7 @@
 // Data.gov.in Scraper Studio - Catalog Page Script (catalog.js)
 
 let currentCatalogPage = 0;
-let catalogPageSize = 9;
+let catalogPageSize = 27;
 let catalogViewMode = 'grid'; // 'grid' or 'list'
 let catalogSearchTimeout = null;
 let catalogTotalPages = 1;
