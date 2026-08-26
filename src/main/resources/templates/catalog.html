@@ -48,12 +48,18 @@
         </div>
 
         <!-- Catalog Container (Dynamic JS Rendering) -->
-        <div id="catalog-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="catalog-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[420px]">
             <!-- Loading Skeleton Placeholder -->
-            <div class="col-span-full py-20 flex flex-col items-center justify-center text-center">
-                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-600 mb-3"></i>
-                <h3 class="text-slate-800 font-bold text-sm">Loading Government Datasets...</h3>
-                <p class="text-slate-400 text-xs mt-1">Connecting to local database</p>
+            <div id="catalog-center-loader" class="col-span-full py-28 flex flex-col items-center justify-center text-center bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-xs">
+                <div class="relative flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                    <i class="fa-solid fa-database text-blue-600 text-base absolute"></i>
+                </div>
+                <h3 class="text-slate-900 font-bold text-base">Loading Government Datasets...</h3>
+                <p class="text-slate-500 text-xs mt-1">Fetching records from local database</p>
+                <div class="mt-4 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[11px] font-mono font-semibold">
+                    <i class="fa-solid fa-bolt mr-1"></i> Fast Database Query
+                </div>
             </div>
         </div>
 

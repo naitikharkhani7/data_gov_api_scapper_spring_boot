@@ -33,14 +33,18 @@ public class ApiExplorerRestController {
     private final ApiTesterService apiTesterService;
     private final ObjectMapper objectMapper;
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApiExplorerRestController.class);
+
     private volatile long cachedTotalCount = -1;
     private volatile long lastCountCheckTime = 0;
 
     private long getTotalCountCached() {
         long now = System.currentTimeMillis();
-        if (cachedTotalCount == -1 || now - lastCountCheckTime > 10000) {
+        if (cachedTotalCount == -1 || now - lastCountCheckTime > 15000) {
+            long cStart = System.currentTimeMillis();
             cachedTotalCount = apiResourceRepository.count();
             lastCountCheckTime = now;
+            log.info("[TIMER] 📊 Count Query refreshed: {} total records in {} ms", cachedTotalCount, (System.currentTimeMillis() - cStart));
         }
         return cachedTotalCount;
     }
@@ -54,6 +58,8 @@ public class ApiExplorerRestController {
             @RequestParam(defaultValue = "27") int size,
             @RequestParam(defaultValue = "id,desc") String sort
     ) {
+        long reqStartTime = System.currentTimeMillis();
+
         if (size <= 0) size = 27;
         if (page < 0) page = 0;
 
@@ -65,20 +71,30 @@ public class ApiExplorerRestController {
         boolean hasSearch = (search != null && !search.isBlank());
         boolean hasSector = (sector != null && !sector.isBlank() && !"ALL".equalsIgnoreCase(sector));
 
+        log.info("[TIMER] ⏱️ Request received: page={}, size={}, search='{}', sector='{}'", page, size, search, sector);
+
         List<ApiResourceEntity> content;
         long totalElements;
 
+        long qStart = System.currentTimeMillis();
         if (hasSearch || hasSector) {
             String s = hasSearch ? search.trim() : null;
             String sec = hasSector ? sector.trim() : null;
             content = apiResourceRepository.searchResourcesPaged(s, sec, pageable);
+            long qEnd = System.currentTimeMillis();
             totalElements = apiResourceRepository.countFiltered(s, sec);
+            long cEnd = System.currentTimeMillis();
+            log.info("[TIMER] 🔍 Filtered DB query: {} items (took {} ms), count query (took {} ms)", content.size(), (qEnd - qStart), (cEnd - qEnd));
         } else {
             content = apiResourceRepository.findPagedRecords(pageable);
+            long qEnd = System.currentTimeMillis();
             totalElements = getTotalCountCached();
+            log.info("[TIMER] ⚡ Paged DB query: {} items (took {} ms)", content.size(), (qEnd - qStart));
         }
 
         int totalPages = totalElements == 0 ? 1 : (int) Math.ceil((double) totalElements / size);
+        long totalReqTime = System.currentTimeMillis() - reqStartTime;
+        log.info("[TIMER] 🚀 Complete API response prepared in {} ms (Total elements: {}, Total pages: {})", totalReqTime, totalElements, totalPages);
 
         return ResponseEntity.ok(Map.of(
                 "content", content,
@@ -87,7 +103,8 @@ public class ApiExplorerRestController {
                 "totalElements", totalElements,
                 "totalPages", totalPages,
                 "first", page == 0,
-                "last", page >= totalPages - 1
+                "last", page >= totalPages - 1,
+                "executionTimeMs", totalReqTime
         ));
     }
 
