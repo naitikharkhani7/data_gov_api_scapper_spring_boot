@@ -1,8 +1,6 @@
 package com.datagov.scrapper.repository;
 
 import com.datagov.scrapper.model.ApiResourceEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +15,18 @@ public interface ApiResourceRepository extends JpaRepository<ApiResourceEntity, 
     Optional<ApiResourceEntity> findByResourceId(String resourceId);
 
     boolean existsByResourceId(String resourceId);
+
+    @Query(value = "SELECT max(id) FROM api_resources", nativeQuery = true)
+    Long findMaxId();
+
+    @Query(value = "SELECT min(id) FROM api_resources", nativeQuery = true)
+    Long findMinId();
+
+    @Query(value = "SELECT id FROM api_resources WHERE id <= :targetMax AND id >= :targetMin ORDER BY id DESC LIMIT :limit", nativeQuery = true)
+    List<Long> findIdsInRange(@Param("targetMax") long targetMax, @Param("targetMin") long targetMin, @Param("limit") int limit);
+
+    @Query(value = "SELECT id FROM api_resources WHERE id <= :targetMax ORDER BY id DESC LIMIT :limit", nativeQuery = true)
+    List<Long> findIdsFromMax(@Param("targetMax") long targetMax, @Param("limit") int limit);
 
     @Query(value = "SELECT id FROM api_resources ORDER BY id DESC LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<Long> findPagedIdsDesc(@Param("limit") int limit, @Param("offset") int offset);

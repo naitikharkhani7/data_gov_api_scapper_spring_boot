@@ -90,12 +90,20 @@ public class ApiExplorerRestController {
             long cEnd = System.currentTimeMillis();
             log.info("[TIMER] 🔍 Filtered IDs lookup: {} ids (took {} ms), count query (took {} ms)", ids.size(), (qEnd - qStart), (cEnd - qEnd));
         } else {
-            ids = (sortDir == Sort.Direction.ASC) ? 
-                    apiResourceRepository.findPagedIdsAsc(size, offset) : 
-                    apiResourceRepository.findPagedIdsDesc(size, offset);
+            Long maxId = apiResourceRepository.findMaxId();
+            if (maxId == null || maxId <= 0) {
+                ids = Collections.emptyList();
+            } else {
+                long targetMax = maxId - offset;
+                long targetMin = Math.max(1, targetMax - size + 1);
+                ids = apiResourceRepository.findIdsInRange(targetMax, targetMin, size);
+                if (ids.size() < size && targetMax > 0) {
+                    ids = apiResourceRepository.findIdsFromMax(targetMax, size);
+                }
+            }
             long qEnd = System.currentTimeMillis();
             totalElements = getTotalCountCached();
-            log.info("[TIMER] ⚡ Index-Only IDs lookup: {} ids (took {} ms)", ids.size(), (qEnd - qStart));
+            log.info("[TIMER] ⚡ Keyset B-Tree Range lookup: {} ids (took {} ms)", ids.size(), (qEnd - qStart));
         }
 
         List<ApiResourceEntity> content;
