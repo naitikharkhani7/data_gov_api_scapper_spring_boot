@@ -1,6 +1,8 @@
 // Data.gov.in Scraper Studio - Live Runner & Tester Script (tester.js)
 
 let lastTestResponseText = "";
+let resIdDebounceTimeout = null;
+let currentDatasetSchema = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const autoId = localStorage.getItem('DATAGOV_TESTER_AUTOLOAD_ID');
@@ -13,16 +15,74 @@ document.addEventListener('DOMContentLoaded', () => {
         resIdInp.value = '8d3b6596-b09e-4077-aebf-425193185a5b';
     }
 
+    fetchAndApplyResourceMeta(resIdInp.value.trim());
     updateLiveCurl();
 });
+
+function onResourceIdChanged() {
+    updateLiveCurl();
+    clearTimeout(resIdDebounceTimeout);
+    resIdDebounceTimeout = setTimeout(() => {
+        const id = document.getElementById('test-resource-id')?.value.trim();
+        if (id) fetchAndApplyResourceMeta(id);
+    }, 400);
+}
 
 function pasteSampleResourceId() {
     const inp = document.getElementById('test-resource-id');
     if (inp) {
         inp.value = '8d3b6596-b09e-4077-aebf-425193185a5b';
+        fetchAndApplyResourceMeta('8d3b6596-b09e-4077-aebf-425193185a5b');
         updateLiveCurl();
         showToast('Sample Crude Oil Resource ID loaded', 'info');
     }
+}
+
+async function fetchAndApplyResourceMeta(resourceId) {
+    if (!resourceId) return;
+
+    try {
+        const res = await fetch(`/api/resources/by-uuid/${encodeURIComponent(resourceId)}`);
+        const metaCard = document.getElementById('test-api-meta-card');
+        const titleEl = document.getElementById('test-meta-title');
+        const descEl = document.getElementById('test-meta-desc');
+        const sectorEl = document.getElementById('test-meta-sector');
+        const orgEl = document.getElementById('test-meta-org');
+        const filterSelect = document.getElementById('test-filter-select');
+
+        if (res.ok) {
+            const data = await res.json();
+            const sectors = parseJsonList(data.sectors);
+            const orgs = parseJsonList(data.organizations);
+            currentDatasetSchema = parseJsonList(data.fieldsJson);
+
+            if (titleEl) titleEl.innerText = data.title || 'Untitled Dataset';
+            if (descEl) descEl.innerText = data.description || 'No description available.';
+            if (sectorEl) sectorEl.innerText = sectors[0] || 'General';
+            if (orgEl) orgEl.innerText = orgs[0] || 'Government of India';
+
+            // Populate Filter Select Dropdown
+            if (filterSelect) {
+                if (currentDatasetSchema.length > 0) {
+                    filterSelect.innerHTML = `<option value="">-- Choose Column to Filter --</option>` +
+                        currentDatasetSchema.map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.name || f.id)} (${escapeHtml(f.type || 'string')})</option>`).join('');
+                } else {
+                    filterSelect.innerHTML = `<option value="">-- No Schema Columns Available --</option>`;
+                }
+            }
+
+            if (metaCard) metaCard.classList.remove('hidden');
+        } else {
+            if (metaCard) metaCard.classList.add('hidden');
+            if (filterSelect) filterSelect.innerHTML = `<option value="">-- Custom Column Name --</option>`;
+        }
+    } catch (e) {
+        console.error('Error fetching resource meta:', e);
+    }
+}
+
+function onFilterColumnSelected() {
+    updateLiveCurl();
 }
 
 function updateLiveCurl() {
@@ -33,7 +93,7 @@ function updateLiveCurl() {
     const offset = document.getElementById('test-offset')?.value || 0;
     const format = document.getElementById('test-format')?.value || 'json';
 
-    const filterKey = document.getElementById('test-filter-key')?.value.trim();
+    const filterKey = document.getElementById('test-filter-select')?.value.trim();
     const filterVal = document.getElementById('test-filter-val')?.value.trim();
 
     let url = `https://api.data.gov.in/resource/${resourceId}?api-key=${encodeURIComponent(apiKey)}&format=${format}&offset=${offset}&limit=${limit}`;
@@ -93,7 +153,7 @@ async function executeApiTest() {
     const offset = parseInt(document.getElementById('test-offset')?.value, 10) || 0;
     const format = document.getElementById('test-format')?.value || 'json';
 
-    const filterKey = document.getElementById('test-filter-key')?.value.trim();
+    const filterKey = document.getElementById('test-filter-select')?.value.trim();
     const filterVal = document.getElementById('test-filter-val')?.value.trim();
 
     const payload = {
