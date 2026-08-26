@@ -4,13 +4,23 @@
     <div id="details-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
         <div class="bg-white border border-slate-200 w-full max-w-4xl rounded-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <!-- Modal Header -->
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-                <div>
-                    <h3 id="modal-title" class="text-base font-bold text-slate-900">API Resource Details</h3>
-                    <p id="modal-uuid" class="text-xs font-mono text-blue-600 font-semibold mt-0.5"></p>
+            <div class="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/70">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <span id="modal-sector-pill" class="px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider border border-blue-200">Sector</span>
+                        <span id="modal-org-pill" class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">Ministry</span>
+                    </div>
+                    <h3 id="modal-title" class="text-base font-bold text-slate-900 leading-snug">API Resource Details</h3>
+                    <div class="flex items-center space-x-2 pt-0.5">
+                        <span class="text-xs text-slate-400 font-medium">Resource UUID:</span>
+                        <span id="modal-uuid" class="text-xs font-mono text-blue-600 font-bold bg-blue-50/80 px-2 py-0.5 rounded border border-blue-100 select-all"></span>
+                        <button type="button" onclick="copyToClipboard(document.getElementById('modal-uuid').innerText, 'Resource ID copied!')" class="text-[11px] text-slate-500 hover:text-blue-600 font-bold ml-1 cursor-pointer" title="Copy UUID">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
-                <button onclick="closeDetailsModal()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center transition">
-                    <i class="fa-solid fa-xmark"></i>
+                <button type="button" onclick="closeDetailsModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
 
@@ -18,34 +28,61 @@
             <div class="p-6 overflow-y-auto space-y-5 flex-1">
                 <!-- Description -->
                 <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Description</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center space-x-1">
+                        <i class="fa-solid fa-align-left text-slate-400"></i>
+                        <span>Dataset Description</span>
+                    </h4>
                     <p id="modal-desc" class="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200 leading-relaxed font-medium"></p>
                 </div>
 
-                <!-- Sectors & Organizations -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Sectors</h4>
-                        <div id="modal-sectors" class="flex flex-wrap gap-1.5"></div>
+                <!-- Direct API Endpoint URL Box -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1">
+                            <i class="fa-solid fa-link text-slate-400"></i>
+                            <span>Direct API Endpoint</span>
+                        </h4>
+                        <button type="button" onclick="copyToClipboard(document.getElementById('modal-api-url').innerText, 'API URL copied!')" class="text-xs font-bold text-blue-600 hover:underline cursor-pointer">
+                            <i class="fa-solid fa-copy mr-1"></i> Copy URL
+                        </button>
                     </div>
-                    <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Organizations</h4>
-                        <div id="modal-orgs" class="flex flex-wrap gap-1.5"></div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between font-mono text-xs text-slate-800 break-all select-all">
+                        <span id="modal-api-url" class="font-semibold text-blue-700"></span>
                     </div>
+                </div>
+
+                <!-- Complete Executable cURL Command -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1">
+                            <i class="fa-solid fa-terminal text-slate-400"></i>
+                            <span>Ready-to-Run cURL Command (With Active API Key)</span>
+                        </h4>
+                        <button type="button" onclick="copyModalCurl()" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 transition cursor-pointer flex items-center space-x-1.5">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Copy cURL</span>
+                        </button>
+                    </div>
+                    <pre id="modal-curl" class="p-3.5 bg-slate-900 rounded-xl font-mono text-[11px] text-emerald-400 border border-slate-800 select-all overflow-x-auto leading-relaxed shadow-inner"></pre>
+                    <p class="text-[11px] text-slate-400 mt-1">💡 You can paste this directly into Terminal, Postman, or CMD to test anywhere.</p>
                 </div>
 
                 <!-- Fields Schema Table -->
                 <div>
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
-                        <span>Fields / Columns Schema</span>
-                        <span id="modal-field-count" class="text-[11px] text-blue-600 font-bold"></span>
+                        <span class="flex items-center space-x-1">
+                            <i class="fa-solid fa-table-columns text-slate-400"></i>
+                            <span>Columns & Schema Specifications</span>
+                        </span>
+                        <span id="modal-field-count" class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200"></span>
                     </h4>
-                    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-h-56 overflow-y-auto">
+                    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-h-60 overflow-y-auto">
                         <table class="w-full text-left text-xs text-slate-700">
                             <thead class="bg-slate-50 text-slate-500 sticky top-0 uppercase font-bold text-[10px] border-b border-slate-200">
                                 <tr>
-                                    <th class="p-2.5 pl-3.5">Field ID</th>
-                                    <th class="p-2.5">Field Name / Label</th>
+                                    <th class="p-2.5 pl-3.5">#</th>
+                                    <th class="p-2.5">Field ID</th>
+                                    <th class="p-2.5">Column Name / Label</th>
                                     <th class="p-2.5 pr-3.5">Data Type</th>
                                 </tr>
                             </thead>
@@ -53,28 +90,23 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- Working cURL box -->
-                <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Working cURL Command</h4>
-                        <button onclick="copyModalCurl()" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition">
-                            <i class="fa-solid fa-copy mr-1"></i> Copy
-                        </button>
-                    </div>
-                    <pre id="modal-curl" class="p-3 bg-slate-900 rounded-xl font-mono text-[11px] text-emerald-300 border border-slate-800 select-all overflow-x-auto"></pre>
-                </div>
             </div>
 
             <!-- Modal Footer -->
-            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end space-x-3">
-                <button onclick="testInStudioFromModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-play"></i>
-                    <span>Open in Live API Runner</span>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <button type="button" onclick="copyModalCurl()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs shadow-2xs transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-copy text-blue-600"></i>
+                    <span>Copy cURL</span>
                 </button>
-                <button onclick="closeDetailsModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 transition">
-                    Close
-                </button>
+                <div class="flex items-center space-x-3">
+                    <button type="button" onclick="closeDetailsModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-600 font-bold text-xs border border-slate-200 transition cursor-pointer">
+                        Close
+                    </button>
+                    <button type="button" onclick="testInStudioFromModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm shadow-blue-500/25 transition flex items-center space-x-1.5 cursor-pointer">
+                        <i class="fa-solid fa-play text-[10px]"></i>
+                        <span>Open in Live API Runner</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

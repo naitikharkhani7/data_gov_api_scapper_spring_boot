@@ -411,36 +411,57 @@ async function openDetailsModalById(id) {
         const item = await res.json();
         currentModalResource = item;
 
-        document.getElementById('modal-title').innerText = item.title || 'Untitled';
-        document.getElementById('modal-uuid').innerText = item.resourceId;
-        document.getElementById('modal-desc').innerText = item.description || 'No description available.';
+        const titleEl = document.getElementById('modal-title');
+        if (titleEl) titleEl.innerText = item.title || 'Untitled Dataset';
+
+        const uuidEl = document.getElementById('modal-uuid');
+        if (uuidEl) uuidEl.innerText = item.resourceId;
+
+        const descEl = document.getElementById('modal-desc');
+        if (descEl) descEl.innerText = item.description || 'No detailed description available.';
+
+        const apiUrlEl = document.getElementById('modal-api-url');
+        const fullApiUrl = item.apiUrl || `https://api.data.gov.in/resource/${item.resourceId}`;
+        if (apiUrlEl) apiUrlEl.innerText = fullApiUrl;
 
         const sectors = parseJsonList(item.sectors);
-        document.getElementById('modal-sectors').innerHTML = sectors.length ? sectors.map(s => `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">${escapeHtml(s)}</span>`).join('') : '<span class="text-xs text-slate-400">None</span>';
+        const sectorPill = document.getElementById('modal-sector-pill');
+        if (sectorPill) sectorPill.innerText = sectors[0] || 'General';
 
         const orgs = parseJsonList(item.organizations);
-        document.getElementById('modal-orgs').innerHTML = orgs.length ? orgs.map(o => `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">${escapeHtml(o)}</span>`).join('') : '<span class="text-xs text-slate-400">None</span>';
+        const orgPill = document.getElementById('modal-org-pill');
+        if (orgPill) orgPill.innerText = orgs[0] || 'Government of India';
 
         const fields = parseJsonList(item.fieldsJson);
-        document.getElementById('modal-field-count').innerText = `${fields.length} Columns`;
+        const fieldCountEl = document.getElementById('modal-field-count');
+        if (fieldCountEl) fieldCountEl.innerText = `${fields.length} Columns`;
+
         const tbody = document.getElementById('modal-fields-tbody');
-        if (fields.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">No field specifications found.</td></tr>`;
-        } else {
-            tbody.innerHTML = fields.map(f => `
-                <tr class="hover:bg-slate-50 font-mono text-[11px]">
-                    <td class="p-2.5 pl-3.5 text-blue-600 font-bold">${escapeHtml(f.id || '-')}</td>
-                    <td class="p-2.5 text-slate-800">${escapeHtml(f.name || f.id || '-')}</td>
-                    <td class="p-2.5 pr-3.5 text-indigo-600 font-semibold">${escapeHtml(f.type || 'string')}</td>
-                </tr>
-            `).join('');
+        if (tbody) {
+            if (fields.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 text-xs">No column definitions specified for this resource.</td></tr>`;
+            } else {
+                tbody.innerHTML = fields.map((f, idx) => `
+                    <tr class="hover:bg-blue-50/50 transition">
+                        <td class="p-2.5 pl-3.5 text-slate-400 font-mono text-[10px]">${idx + 1}</td>
+                        <td class="p-2.5 text-blue-600 font-bold font-mono text-[11px]">${escapeHtml(f.id || '-')}</td>
+                        <td class="p-2.5 text-slate-800 text-xs font-semibold">${escapeHtml(f.name || f.id || '-')}</td>
+                        <td class="p-2.5 pr-3.5">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono font-semibold text-[10px] border border-slate-200">${escapeHtml(f.type || 'keyword')}</span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
         const activeKey = getGlobalApiKey();
-        const curlCmd = `curl -X GET 'https://api.data.gov.in/resource/${item.resourceId}?api-key=${encodeURIComponent(activeKey)}&format=json&offset=0&limit=10' \\\n  -H 'Accept: application/json'`;
-        document.getElementById('modal-curl').innerText = curlCmd;
+        const curlCmd = `curl -X GET \\\n  'https://api.data.gov.in/resource/${item.resourceId}?api-key=${encodeURIComponent(activeKey)}&format=json&offset=0&limit=10' \\\n  -H 'Accept: application/json'`;
+        
+        const curlEl = document.getElementById('modal-curl');
+        if (curlEl) curlEl.innerText = curlCmd;
 
-        document.getElementById('details-modal').classList.remove('hidden');
+        const modal = document.getElementById('details-modal');
+        if (modal) modal.classList.remove('hidden');
     } catch (e) {
         showToast('Error loading details: ' + e.message, 'error');
     }
