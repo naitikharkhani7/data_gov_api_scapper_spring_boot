@@ -1,0 +1,61 @@
+URL:- https://www.data.gov.in/apis
+
+User API Key to test this API is: "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b". This is a sample key, which will return maximum of 10 records at a time. To avail your key, please login to the portal and goto "My Account" section.
+
+Default value : 579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b
+
+
+
+
+curl --url 'https://api.data.gov.in/lists?format=json&filters\[source\]=data.gov.in&filters\[active\]=1&aggs\[0\]\[name\]=sector&aggs\[0\]\[size\]=1000' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,kn;q=0.6' \
+  -H 'Connection: keep-alive' \
+  -H 'Origin: https://www.data.gov.in' \
+  -H 'Referer: https://www.data.gov.in/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"'
+
+
+
+  curl --url 'https://api.data.gov.in/lists?format=json&notfilters\[source\]=visualize.data.gov.in&filters\[active\]=1&limit=8&offset=0&sort\[created\]=desc' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,kn;q=0.6' \
+  -H 'Connection: keep-alive' \
+  -H 'Origin: https://www.data.gov.in' \
+  -H 'Referer: https://www.data.gov.in/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"'
+
+
+
+
+  curl --url 'https://www.data.gov.in/backend/dataapi/v1/swagger/14613c4e-5ab0-4705-b440-e4e49ae345de' \
+  -H 'accept: application/json,*/*' \
+  -H 'accept-language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,kn;q=0.6' \
+  -b '_ga=GA1.1.1701835221.1781870631; _ga_3YWYLNVXP0=GS2.1.s1786370670$o1$g0$t1786370677$j53$l0$h0; fontSize=67.5; _ga_2NLK0N9J6V=GS2.1.s1787722725$o9$g1$t1787723102$j59$l0$h0' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.data.gov.in/resource/year-wise-details-actual-revenue-collection-net-central-goods-and-services-tax-gst' \
+  -H 'sec-ch-ua: "Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+
+
+
+  curl -X 'GET' \
+  'https://api.data.gov.in/resource/14613c4e-5ab0-4705-b440-e4e49ae345de?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&offset=1&limit=10' \
+  -H 'accept: application/xml'

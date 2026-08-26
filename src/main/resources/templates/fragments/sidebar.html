@@ -1,0 +1,95 @@
+<div th:fragment="sidebar">
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between h-full shrink-0 z-30 shadow-sm">
+        <div class="flex flex-col h-full">
+            <!-- Brand Logo -->
+            <div class="h-16 px-6 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/25">
+                        <i class="fa-solid fa-cloud-arrow-down text-white text-base"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-900 leading-tight">DataGov Scraper</div>
+                        <div class="text-[11px] text-blue-600 font-semibold">API Discovery Studio</div>
+                    </div>
+                </div>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">v1.0</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="px-4 py-5 space-y-6 overflow-y-auto flex-1">
+                <div>
+                    <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Main Navigation</div>
+                    <nav class="space-y-1">
+                        <a href="/" id="nav-tab-dashboard" th:class="'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ' + (${activeTab == 'dashboard'} ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-bolt text-sm"></i>
+                                <span>Scraper Studio</span>
+                            </div>
+                            <span th:if="${activeTab == 'dashboard'}" class="w-2 h-2 rounded-full bg-white opacity-80"></span>
+                        </a>
+
+                        <a href="/catalog" id="nav-tab-catalog" th:class="'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ' + (${activeTab == 'catalog'} ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-layer-group text-sm"></i>
+                                <span>API Catalog</span>
+                            </div>
+                            <span id="sidebar-count-badge" th:class="'px-2 py-0.5 rounded-full text-[10px] font-bold ' + (${activeTab == 'catalog'} ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600')">0</span>
+                        </a>
+
+                        <a href="/tester" id="nav-tab-tester" th:class="'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ' + (${activeTab == 'tester'} ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70')">
+                            <i class="fa-solid fa-terminal text-sm"></i>
+                            <span>Live API Runner & cURL</span>
+                        </a>
+
+                        <a href="/export" id="nav-tab-export" th:class="'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ' + (${activeTab == 'export'} ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70')">
+                            <i class="fa-solid fa-download text-sm"></i>
+                            <span>Export & Tools</span>
+                        </a>
+
+                        <a href="/settings" id="nav-tab-settings" th:class="'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ' + (${activeTab == 'settings'} ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70')">
+                            <i class="fa-solid fa-gear text-sm"></i>
+                            <span>Settings</span>
+                        </a>
+                    </nav>
+                </div>
+
+
+
+                <!-- Quick External Tools -->
+                <div>
+                    <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Database & Links</div>
+                    <div class="space-y-1">
+                        <a href="/h2-console" target="_blank" class="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition">
+                            <div class="flex items-center space-x-2.5">
+                                <i class="fa-solid fa-database text-slate-400"></i>
+                                <span>H2 Web Console</span>
+                            </div>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+                        </a>
+                        <a href="https://www.data.gov.in/apis" target="_blank" class="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition">
+                            <div class="flex items-center space-x-2.5">
+                                <i class="fa-solid fa-globe text-slate-400"></i>
+                                <span>data.gov.in Portal</span>
+                            </div>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer User / Global Key Indicator -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+                    <div class="text-[11px] leading-tight">
+                        <div id="sidebar-key-label" class="font-bold text-slate-800">Sample Key</div>
+                        <div id="sidebar-key-subtext" class="text-slate-400 font-mono text-[10px]">579b46...</div>
+                    </div>
+                </div>
+                <button onclick="openApiKeyModal()" class="text-xs font-bold text-blue-600 hover:text-blue-700">Manage</button>
+            </div>
+        </div>
+    </aside>
+</div>

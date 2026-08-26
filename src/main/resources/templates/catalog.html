@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{layout :: layout(~{::section})}">
+<body>
+<section>
+    <!-- =================================================================================== -->
+    <!-- TAB 2: API CATALOG & EXPLORER -->
+    <!-- =================================================================================== -->
+    <div id="tab-content-catalog" class="space-y-6">
+        <!-- Top Toolbar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            <!-- Search & Filters -->
+            <div class="flex-1 flex flex-col md:flex-row gap-3">
+                <div class="relative w-full md:w-64">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-search text-slate-400"></i>
+                    </div>
+                    <input type="text" id="catalog-search" placeholder="Search API title or ID..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onkeyup="filterCatalog()">
+                </div>
+                
+                <select id="catalog-sector-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
+                    <option value="ALL">All Sectors</option>
+                    <th:block th:each="s : ${sectors}">
+                        <option th:value="${s.name}" th:text="${s.name}"></option>
+                    </th:block>
+                </select>
+
+                <select id="catalog-domain-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
+                    <option value="ALL">All Domains</option>
+                </select>
+
+                <select id="catalog-org-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
+                    <option value="ALL">Organization Type</option>
+                    <option value="Central">Central</option>
+                    <option value="State">State</option>
+                </select>
+
+                <select id="catalog-state-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
+                    <option value="ALL">State/Department</option>
+                </select>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+                <button onclick="setCatalogView('grid')" id="btn-view-grid" class="p-1.5 px-3 rounded-lg bg-white shadow-sm text-blue-600 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-grid-2"></i> <span class="text-xs font-bold">Grid</span>
+                </button>
+                <button onclick="setCatalogView('list')" id="btn-view-list" class="p-1.5 px-3 rounded-lg text-slate-500 hover:text-slate-700 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-list"></i> <span class="text-xs font-bold">List</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Catalog Grid / List Container -->
+        <div id="catalog-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <th:block th:each="api : ${apis}">
+                <!-- API Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 card-shadow hover:border-blue-300 card-shadow-hover transition flex flex-col overflow-hidden group">
+                    <div class="p-5 flex-1 space-y-3">
+                        <div class="flex items-start justify-between">
+                            <span class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider border border-blue-100" th:text="${api.sector}">Sector</span>
+                            <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100" title="Index/Resource ID" th:text="${api.indexName}">ID</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 line-clamp-2 group-hover:text-blue-600 transition" th:text="${api.title}">API Title</h3>
+                        <p class="text-sm text-slate-500 line-clamp-2" th:text="${api.description}">Description</p>
+                        
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">
+                                <i class="fa-regular fa-calendar mr-1"></i> <span th:text="${api.createdAt}">Date</span>
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">
+                                <i class="fa-solid fa-building mr-1"></i> <span th:text="${api.orgType}">Org</span>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Card Footer Actions -->
+                    <div class="bg-slate-50 border-t border-slate-100 p-4 flex items-center justify-between">
+                        <button th:onclick="'viewSchema(\'' + ${api.id} + '\')'" class="text-xs font-bold text-slate-600 hover:text-blue-600 transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-sitemap"></i>
+                            <span>View Schema</span>
+                        </button>
+                        <button th:onclick="'loadInTester(\'' + ${api.indexName} + '\')'" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm shadow-blue-500/25">
+                            <i class="fa-solid fa-play text-[10px]"></i>
+                            <span>Run API</span>
+                        </button>
+                    </div>
+                </div>
+            </th:block>
+            <!-- Empty State -->
+            <div th:if="${apis == null || apis.empty}" class="col-span-full py-16 flex flex-col items-center justify-center text-center">
+                <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mb-4">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="text-slate-700 font-bold text-lg">No APIs Found</h3>
+                <p class="text-slate-500 text-sm mt-1">Try scraping some APIs first or adjust your filters.</p>
+                <a href="/" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-500/25 hover:bg-blue-700 transition">
+                    Go to Scraper Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Catalog Page Specific Logic -->
+    <script src="/js/catalog.js"></script>
+</section>
+</body>
+</html>

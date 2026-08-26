@@ -1,0 +1,90 @@
+{
+    "message": "Resource lists",
+    "version": "2.2.0",
+    "status": "ok",
+    "total": 285974,
+    "count": 1,
+    "limit": "1",
+    "offset": "0",
+    "records": [
+        {
+            "index_name": "vs17a72ll20a48i57culugq2gbkr8rcw",
+            "title": "Sample Data for Stacked Chart",
+            "desc": "Sample Data for Stacked Chart",
+            "timestamp": 1497863334,
+            "created": 1497863334,
+            "updated": 1497863334,
+            "active": "0",
+            "visualizable": "1",
+            "user_id": "31108773",
+            "is_public": "0",
+            "public_type": "1",
+            "source": "visualize.data.gov.in",
+            "org_type": "User",
+            "field": [
+                {
+                    "name": "as_on_31st_march",
+                    "id": "as_on_31st_march",
+                    "type": "keyword"
+                },
+                {
+                    "name": "two_wheelers___as_percentage_of_total_vehicle_population",
+                    "id": "two_wheelers___as_percentage_of_total_vehicle_population",
+                    "type": "keyword"
+                },
+                {
+                    "name": "cars_jeeps_and_taxis___as_percentage_of_total_vehicle_population",
+                    "id": "cars_jeeps_and_taxis___as_percentage_of_total_vehicle_population",
+                    "type": "keyword"
+                },
+                {
+                    "name": "buses___as_percentage_of_total_vehicle_population",
+                    "id": "buses___as_percentage_of_total_vehicle_population",
+                    "type": "keyword"
+                },
+                {
+                    "name": "goods_vehicle___as_percentage_of_total_vehicle_population",
+                    "id": "goods_vehicle___as_percentage_of_total_vehicle_population",
+                    "type": "keyword"
+                },
+                {
+                    "name": "other_vehicles___as_percentage_of_total_vehicle_population",
+                    "id": "other_vehicles___as_percentage_of_total_vehicle_population",
+                    "type": "keyword"
+                },
+                {
+                    "name": "total___million",
+                    "id": "total___million",
+                    "type": "keyword"
+                }
+            ],
+            "status": 1,
+            "created_date": "2017-06-19T14:38:54Z",
+            "updated_date": "2017-06-19T14:38:54Z"
+        }
+    ],
+    "params": {
+        "index": "data_resource",
+        "type": "resource",
+        "body": {
+            "size": "1",
+            "from": "0",
+            "query": {
+                "bool": {
+                    "must_not": [
+                        {
+                            "term": {
+                                "active": 2
+                            }
+                        },
+                        {
+                            "term": {
+                                "type": "catalog"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
