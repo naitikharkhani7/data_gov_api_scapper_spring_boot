@@ -35,11 +35,18 @@ public class ApiExplorerRestController {
     private final ApiResourceRepository apiResourceRepository;
     private final ApiTesterService apiTesterService;
     private final ObjectMapper objectMapper;
+    private final com.datagov.scrapper.service.IndexSearchService indexSearchService;
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApiExplorerRestController.class);
 
     private volatile long cachedTotalCount = -1;
     private volatile long lastCountCheckTime = 0;
+
+    private final java.util.concurrent.ConcurrentHashMap<String, Long> sectorCountCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private long getSectorCountCached(String sector) {
+        return sectorCountCache.computeIfAbsent(sector.toLowerCase().trim(), s -> apiResourceRepository.countBySector(sector));
+    }
 
     private long getTotalCountCached() {
         long now = System.currentTimeMillis();
@@ -56,7 +63,10 @@ public class ApiExplorerRestController {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Map<String, Object>> listResources(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String state,
             @RequestParam(required = false) String sector,
+            @RequestParam(required = false) String orgType,
+            @RequestParam(required = false) String year,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "27") int size,
             @RequestParam(defaultValue = "id,desc") String sort
@@ -71,24 +81,53 @@ public class ApiExplorerRestController {
         Sort.Direction sortDir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         boolean hasSearch = (search != null && !search.isBlank());
+        boolean hasState = (state != null && !state.isBlank() && !"ALL".equalsIgnoreCase(state));
         boolean hasSector = (sector != null && !sector.isBlank() && !"ALL".equalsIgnoreCase(sector));
+        boolean hasOrgType = (orgType != null && !orgType.isBlank() && !"ALL".equalsIgnoreCase(orgType));
+        boolean hasYear = (year != null && !year.isBlank() && !"ALL".equalsIgnoreCase(year));
 
-        log.info("[TIMER] ⏱️ Request received: page={}, size={}, search='{}', sector='{}'", page, size, search, sector);
+        log.info("[TIMER] ⏱️ Request: page={}, size={}, search='{}', state='{}', sector='{}', orgType='{}', year='{}'",
+                page, size, search, state, sector, orgType, year);
 
-        List<Long> ids;
-        long totalElements;
+        List<Long> ids = null;
+        long totalElements = 0;
 
         int offset = page * size;
         long qStart = System.currentTimeMillis();
 
-        if (hasSearch || hasSector) {
+        if (hasSearch || hasState || hasSector || hasOrgType || hasYear) {
             String s = hasSearch ? search.trim() : null;
+            String st = hasState ? state.trim() : null;
             String sec = hasSector ? sector.trim() : null;
-            ids = apiResourceRepository.searchPagedIds(s, sec, size, offset);
-            long qEnd = System.currentTimeMillis();
-            totalElements = apiResourceRepository.countFiltered(s, sec);
-            long cEnd = System.currentTimeMillis();
-            log.info("[TIMER] 🔍 Filtered IDs lookup: {} ids (took {} ms), count query (took {} ms)", ids.size(), (qEnd - qStart), (cEnd - qEnd));
+            String ot = hasOrgType ? orgType.trim() : null;
+            String yr = hasYear ? year.trim() : null;
+
+            // DSA Path 1: Fast Multi-Dimensional In-Memory Inverted Index (O(1) / O(N) in RAM)
+            if (indexSearchService.isReady()) {
+                com.datagov.scrapper.service.IndexSearchService.PagedIndexResult res = indexSearchService.searchAndFilter(s, st, sec, ot, yr, page, size);
+                if (res != null) {
+                    ids = res.ids();
+                    totalElements = res.totalCount();
+                    long qEnd = System.currentTimeMillis();
+                    log.info("[TIMER] ⚡ In-Memory DSA Index Lookup: {} ids (took {} ms), Total Matched: {}", ids.size(), (qEnd - qStart), totalElements);
+                }
+            }
+
+            // Fallback to DB if index is not ready
+            if (ids == null) {
+                if (hasSearch && hasSector) {
+                    ids = apiResourceRepository.searchPagedIds(s, sec, size, offset);
+                    totalElements = apiResourceRepository.countFiltered(s, sec);
+                } else if (hasSector) {
+                    ids = apiResourceRepository.findPagedIdsBySector(sec, size, offset);
+                    totalElements = getSectorCountCached(sec);
+                } else {
+                    ids = apiResourceRepository.searchPagedIds(s, null, size, offset);
+                    totalElements = apiResourceRepository.countFiltered(s, null);
+                }
+                long qEnd = System.currentTimeMillis();
+                log.info("[TIMER] 🔍 DB Fallback Query: {} ids (took {} ms)", ids.size(), (qEnd - qStart));
+            }
         } else {
             Long maxId = apiResourceRepository.findMaxId();
             if (maxId == null || maxId <= 0) {

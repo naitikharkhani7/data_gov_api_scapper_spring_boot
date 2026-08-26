@@ -60,12 +60,18 @@ function goToCatalogPage(p) {
 
 function saveFiltersState() {
     const searchInp = document.getElementById('catalog-search');
+    const stateInp = document.getElementById('catalog-state-filter');
     const sectorInp = document.getElementById('catalog-sector-filter');
+    const orgTypeInp = document.getElementById('catalog-orgtype-filter');
+    const yearInp = document.getElementById('catalog-year-filter');
     const sortInp = document.getElementById('catalog-sort');
 
     const state = {
         search: searchInp ? searchInp.value.trim() : '',
+        state: stateInp ? stateInp.value : 'ALL',
         sector: sectorInp ? sectorInp.value : 'ALL',
+        orgType: orgTypeInp ? orgTypeInp.value : 'ALL',
+        year: yearInp ? yearInp.value : 'ALL',
         sort: sortInp ? sortInp.value : 'id,desc',
         size: catalogPageSize
     };
@@ -78,12 +84,18 @@ function restoreFiltersState() {
     try {
         const state = JSON.parse(raw);
         const searchInp = document.getElementById('catalog-search');
+        const stateInp = document.getElementById('catalog-state-filter');
         const sectorInp = document.getElementById('catalog-sector-filter');
+        const orgTypeInp = document.getElementById('catalog-orgtype-filter');
+        const yearInp = document.getElementById('catalog-year-filter');
         const sortInp = document.getElementById('catalog-sort');
         const sizeInp = document.getElementById('catalog-page-size');
 
         if (state.search !== undefined && searchInp) searchInp.value = state.search;
+        if (state.state !== undefined && stateInp) stateInp.value = state.state;
         if (state.sector !== undefined && sectorInp) sectorInp.value = state.sector;
+        if (state.orgType !== undefined && orgTypeInp) orgTypeInp.value = state.orgType;
+        if (state.year !== undefined && yearInp) yearInp.value = state.year;
         if (state.sort !== undefined && sortInp) sortInp.value = state.sort;
         if (state.size !== undefined) {
             catalogPageSize = state.size;
@@ -94,16 +106,42 @@ function restoreFiltersState() {
     }
 }
 
+function resetCatalogFilters() {
+    const searchInp = document.getElementById('catalog-search');
+    const stateInp = document.getElementById('catalog-state-filter');
+    const sectorInp = document.getElementById('catalog-sector-filter');
+    const orgTypeInp = document.getElementById('catalog-orgtype-filter');
+    const yearInp = document.getElementById('catalog-year-filter');
+    const sortInp = document.getElementById('catalog-sort');
+
+    if (searchInp) searchInp.value = '';
+    if (stateInp) stateInp.value = 'ALL';
+    if (sectorInp) sectorInp.value = 'ALL';
+    if (orgTypeInp) orgTypeInp.value = 'ALL';
+    if (yearInp) yearInp.value = 'ALL';
+    if (sortInp) sortInp.value = 'id,desc';
+
+    sessionStorage.removeItem('DATAGOV_CATALOG_FILTERS');
+    loadCatalog(0);
+    showToast('Filters reset to default', 'info');
+}
+
 async function loadCatalog(page = 0) {
     currentCatalogPage = page;
     saveFiltersState();
 
     const searchInp = document.getElementById('catalog-search');
+    const stateInp = document.getElementById('catalog-state-filter');
     const sectorInp = document.getElementById('catalog-sector-filter');
+    const orgTypeInp = document.getElementById('catalog-orgtype-filter');
+    const yearInp = document.getElementById('catalog-year-filter');
     const sortInp = document.getElementById('catalog-sort');
 
     const search = searchInp ? searchInp.value.trim() : '';
+    const state = stateInp ? stateInp.value : 'ALL';
     const sector = sectorInp ? sectorInp.value : 'ALL';
+    const orgType = orgTypeInp ? orgTypeInp.value : 'ALL';
+    const year = yearInp ? yearInp.value : 'ALL';
     const sortVal = sortInp ? sortInp.value : 'id,desc';
 
     const params = new URLSearchParams({
@@ -112,7 +150,10 @@ async function loadCatalog(page = 0) {
         sort: sortVal
     });
     if (search) params.append('search', search);
+    if (state && state !== 'ALL') params.append('state', state);
     if (sector && sector !== 'ALL') params.append('sector', sector);
+    if (orgType && orgType !== 'ALL') params.append('orgType', orgType);
+    if (year && year !== 'ALL') params.append('year', year);
 
     const cardsContainer = document.getElementById('catalog-container');
     if (cardsContainer) {

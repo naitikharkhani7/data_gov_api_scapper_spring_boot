@@ -37,6 +37,12 @@ public interface ApiResourceRepository extends JpaRepository<ApiResourceEntity, 
     @Query("SELECT r FROM ApiResourceEntity r WHERE r.id IN (:ids)")
     List<ApiResourceEntity> findAllByIdInList(@Param("ids") List<Long> ids);
 
+    @Query(value = "SELECT id FROM api_resources WHERE sectors LIKE CONCAT('%', :sector, '%') ORDER BY id DESC LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Long> findPagedIdsBySector(@Param("sector") String sector, @Param("limit") int limit, @Param("offset") int offset);
+
+    @Query(value = "SELECT count(id) FROM api_resources WHERE sectors LIKE CONCAT('%', :sector, '%')", nativeQuery = true)
+    long countBySector(@Param("sector") String sector);
+
     @Query(value = "SELECT id FROM api_resources WHERE " +
            "(:search IS NULL OR LOWER(title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            " LOWER(description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +

@@ -27,6 +27,7 @@ public class WebViewController {
         model.addAttribute("pageTitle", "Scraped API Catalog");
         model.addAttribute("pageSubtitle", "Search, inspect, copy cURL, and test all APIs stored in local H2 database");
         model.addAttribute("sectors", scraperService.getSectors());
+        model.addAttribute("states", com.datagov.scrapper.service.IndexSearchService.INDIAN_STATES);
         return "catalog";
     }
 
