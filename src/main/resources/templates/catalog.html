@@ -11,92 +11,99 @@
             
             <!-- Search & Filters -->
             <div class="flex-1 flex flex-col md:flex-row gap-3">
-                <div class="relative w-full md:w-64">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-search text-slate-400"></i>
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </div>
-                    <input type="text" id="catalog-search" placeholder="Search API title or ID..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onkeyup="filterCatalog()">
+                    <input type="text" id="catalog-search" placeholder="Search API title, ministry, ID..." class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" onkeyup="filterCatalog()">
                 </div>
                 
-                <select id="catalog-sector-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
-                    <option value="ALL">All Sectors</option>
+                <select id="catalog-sector-filter" class="w-full md:w-60 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" onchange="filterCatalog()">
+                    <option value="ALL">All Sectors & Ministries</option>
                     <th:block th:each="s : ${sectors}">
-                        <option th:value="${s.name}" th:text="${s.name}"></option>
+                        <option th:value="${s.name}" th:text="${s.name + ' (' + s.count + ')'}"></option>
                     </th:block>
                 </select>
 
-                <select id="catalog-domain-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
-                    <option value="ALL">All Domains</option>
-                </select>
-
-                <select id="catalog-org-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
-                    <option value="ALL">Organization Type</option>
-                    <option value="Central">Central</option>
-                    <option value="State">State</option>
-                </select>
-
-                <select id="catalog-state-filter" class="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition" onchange="filterCatalog()">
-                    <option value="ALL">State/Department</option>
+                <select id="catalog-sort" class="w-full md:w-44 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" onchange="filterCatalog()">
+                    <option value="id,desc">Latest Scraped First</option>
+                    <option value="id,asc">Oldest Scraped First</option>
+                    <option value="title,asc">Title (A - Z)</option>
+                    <option value="title,desc">Title (Z - A)</option>
                 </select>
             </div>
 
-            <!-- View Toggle -->
-            <div class="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
-                <button onclick="setCatalogView('grid')" id="btn-view-grid" class="p-1.5 px-3 rounded-lg bg-white shadow-sm text-blue-600 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-grid-2"></i> <span class="text-xs font-bold">Grid</span>
-                </button>
-                <button onclick="setCatalogView('list')" id="btn-view-list" class="p-1.5 px-3 rounded-lg text-slate-500 hover:text-slate-700 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-list"></i> <span class="text-xs font-bold">List</span>
-                </button>
+            <!-- View Mode & Total Header -->
+            <div class="flex items-center space-x-3 shrink-0">
+                <span id="catalog-count-header" class="text-xs font-bold text-slate-500 hidden md:inline-block">Loading...</span>
+                <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button onclick="setCatalogView('grid')" id="btn-view-grid" class="p-1.5 px-3 rounded-lg bg-white shadow-2xs text-blue-600 font-bold text-xs transition flex items-center space-x-1.5 cursor-pointer">
+                        <i class="fa-solid fa-grid-2 text-xs"></i> <span>Cards</span>
+                    </button>
+                    <button onclick="setCatalogView('list')" id="btn-view-list" class="p-1.5 px-3 rounded-lg text-slate-500 hover:text-slate-900 font-bold text-xs transition flex items-center space-x-1.5 cursor-pointer">
+                        <i class="fa-solid fa-list text-xs"></i> <span>List</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Catalog Grid / List Container -->
+        <!-- Catalog Container (Dynamic JS Rendering) -->
         <div id="catalog-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <th:block th:each="api : ${apis}">
-                <!-- API Card -->
-                <div class="bg-white rounded-2xl border border-slate-200 card-shadow hover:border-blue-300 card-shadow-hover transition flex flex-col overflow-hidden group">
-                    <div class="p-5 flex-1 space-y-3">
-                        <div class="flex items-start justify-between">
-                            <span class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider border border-blue-100" th:text="${api.sector}">Sector</span>
-                            <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100" title="Index/Resource ID" th:text="${api.indexName}">ID</span>
-                        </div>
-                        <h3 class="text-base font-bold text-slate-900 line-clamp-2 group-hover:text-blue-600 transition" th:text="${api.title}">API Title</h3>
-                        <p class="text-sm text-slate-500 line-clamp-2" th:text="${api.description}">Description</p>
-                        
-                        <!-- Tags -->
-                        <div class="flex flex-wrap gap-2 pt-2">
-                            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">
-                                <i class="fa-regular fa-calendar mr-1"></i> <span th:text="${api.createdAt}">Date</span>
-                            </span>
-                            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">
-                                <i class="fa-solid fa-building mr-1"></i> <span th:text="${api.orgType}">Org</span>
-                            </span>
-                        </div>
-                    </div>
-                    <!-- Card Footer Actions -->
-                    <div class="bg-slate-50 border-t border-slate-100 p-4 flex items-center justify-between">
-                        <button th:onclick="'viewSchema(\'' + ${api.id} + '\')'" class="text-xs font-bold text-slate-600 hover:text-blue-600 transition flex items-center space-x-1.5">
-                            <i class="fa-solid fa-sitemap"></i>
-                            <span>View Schema</span>
-                        </button>
-                        <button th:onclick="'loadInTester(\'' + ${api.indexName} + '\')'" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm shadow-blue-500/25">
-                            <i class="fa-solid fa-play text-[10px]"></i>
-                            <span>Run API</span>
-                        </button>
-                    </div>
+            <!-- Loading Skeleton Placeholder -->
+            <div class="col-span-full py-20 flex flex-col items-center justify-center text-center">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-600 mb-3"></i>
+                <h3 class="text-slate-800 font-bold text-sm">Loading Government Datasets...</h3>
+                <p class="text-slate-400 text-xs mt-1">Connecting to local database</p>
+            </div>
+        </div>
+
+        <!-- Comprehensive Pagination Bar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow flex flex-col xl:flex-row items-center justify-between gap-4">
+            <!-- Left Info & Per Page -->
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600 font-medium">
+                <div>
+                    Showing <span id="pag-showing-start" class="font-bold text-slate-900 font-mono">1</span> to 
+                    <span id="pag-showing-end" class="font-bold text-slate-900 font-mono">9</span> of 
+                    <span id="pag-total-items" class="font-bold text-blue-600 font-mono">0</span> APIs
                 </div>
-            </th:block>
-            <!-- Empty State -->
-            <div th:if="${apis == null || apis.empty}" class="col-span-full py-16 flex flex-col items-center justify-center text-center">
-                <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mb-4">
-                    <i class="fa-solid fa-box-open"></i>
+                <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-slate-500">Per page:</span>
+                    <select id="catalog-page-size" onchange="changePageSize(this.value)" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                        <option value="9" selected>9 APIs</option>
+                        <option value="18">18 APIs</option>
+                        <option value="36">36 APIs</option>
+                        <option value="72">72 APIs</option>
+                    </select>
                 </div>
-                <h3 class="text-slate-700 font-bold text-lg">No APIs Found</h3>
-                <p class="text-slate-500 text-sm mt-1">Try scraping some APIs first or adjust your filters.</p>
-                <a href="/" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-500/25 hover:bg-blue-700 transition">
-                    Go to Scraper Dashboard
-                </a>
+            </div>
+            
+            <!-- Center Numeric Page Pills -->
+            <div id="pag-number-pills" class="flex flex-wrap items-center justify-center gap-1.5">
+                <!-- Dynamically rendered via catalog.js: [1] [2] [3] ... [20122] -->
+            </div>
+
+            <!-- Right Controls & Quick Jump -->
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <button type="button" id="pag-btn-prev" onclick="prevCatalogPage()" class="p-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition disabled:opacity-30 disabled:pointer-events-none flex items-center space-x-1 cursor-pointer">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                    <span>Prev</span>
+                </button>
+                <button type="button" id="pag-btn-next" onclick="nextCatalogPage()" class="p-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm shadow-blue-500/25 transition disabled:opacity-30 disabled:pointer-events-none flex items-center space-x-1 cursor-pointer">
+                    <span>Next</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+
+                <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
+
+                <!-- Jump to page form -->
+                <form onsubmit="jumpToPage(event)" class="flex items-center space-x-1">
+                    <span class="text-xs text-slate-400">Go:</span>
+                    <input type="number" id="pag-jump-input" min="1" placeholder="Page" class="w-16 px-2 py-1 text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-lg text-center focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <button type="submit" class="px-2.5 py-1 bg-slate-800 hover:bg-black text-white text-xs font-bold rounded-lg transition cursor-pointer">
+                        Go
+                    </button>
+                </form>
             </div>
         </div>
     </div>

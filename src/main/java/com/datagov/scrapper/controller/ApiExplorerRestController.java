@@ -46,11 +46,19 @@ public class ApiExplorerRestController {
         Sort.Direction sortDir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortProp));
 
-        Page<ApiResourceEntity> resourcePage = apiResourceRepository.searchResources(
-                (search != null && !search.isBlank()) ? search.trim() : null,
-                (sector != null && !sector.isBlank() && !"ALL".equalsIgnoreCase(sector)) ? sector.trim() : null,
-                pageable
-        );
+        boolean hasSearch = (search != null && !search.isBlank());
+        boolean hasSector = (sector != null && !sector.isBlank() && !"ALL".equalsIgnoreCase(sector));
+
+        Page<ApiResourceEntity> resourcePage;
+        if (hasSearch || hasSector) {
+            resourcePage = apiResourceRepository.searchResources(
+                    hasSearch ? search.trim() : null,
+                    hasSector ? sector.trim() : null,
+                    pageable
+            );
+        } else {
+            resourcePage = apiResourceRepository.findAll(pageable);
+        }
 
         return ResponseEntity.ok(Map.of(
                 "content", resourcePage.getContent(),
