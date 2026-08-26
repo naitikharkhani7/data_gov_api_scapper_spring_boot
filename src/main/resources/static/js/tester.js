@@ -47,7 +47,7 @@ async function fetchAndApplyResourceMeta(resourceId) {
         const titleEl = document.getElementById('test-meta-title');
         const descEl = document.getElementById('test-meta-desc');
         const sectorEl = document.getElementById('test-meta-sector');
-        const orgEl = document.getElementById('test-meta-org');
+        const uuidEl = document.getElementById('test-meta-uuid');
         const filterSelect = document.getElementById('test-filter-select');
 
         if (res.ok) {
@@ -56,6 +56,7 @@ async function fetchAndApplyResourceMeta(resourceId) {
             const orgs = parseJsonList(data.organizations);
             currentDatasetSchema = parseJsonList(data.fieldsJson);
 
+            if (uuidEl) uuidEl.innerText = data.resourceId || resourceId;
             if (titleEl) titleEl.innerText = data.title || 'Untitled Dataset';
             if (descEl) descEl.innerText = data.description || 'No description available.';
             if (sectorEl) sectorEl.innerText = sectors[0] || 'General';

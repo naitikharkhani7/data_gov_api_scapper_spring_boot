@@ -83,8 +83,8 @@
         <div th:replace="~{fragments/header :: header}"></div>
         <!-- Main Scrollable Content Area -->
         <main class="flex-1 overflow-y-auto p-8 space-y-6">
-<!-- Top 4 KPI Metrics Cards (White & Blue Palette) -->
-            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Top 4 KPI Metrics Cards (White & Blue Palette) -->
+            <section th:if="${activeTab != 'tester'}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                 <!-- Card 1 -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/90 card-shadow hover:border-blue-300 card-shadow-hover transition group">
                     <div class="flex items-center justify-between">

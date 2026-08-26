@@ -35,9 +35,10 @@ temp/
 # Local Scraped Data & Runtime State (Keep repository clean)
 # -------------------------------------------------------------------------
 data/
-*.db
 *.mv.db
 *.trace.db
+*.db
+!data_gov_apis.db
 .theme-wagon/
 /Scraper-Pro-Downloads/
 /ThemeWagon/

@@ -6,6 +6,29 @@
     <!-- TAB 3: LIVE API RUNNER & cURL TEST BENCH -->
     <!-- =================================================================================== -->
     <div id="tab-content-tester" class="space-y-6">
+
+        <!-- TOP FULL-WIDTH ACTIVE API HEADER BANNER -->
+        <div id="test-api-meta-card" class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow space-y-2.5 transition">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span id="test-meta-sector" class="px-3 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200">Health & Family Welfare</span>
+                    <span id="test-meta-org" class="px-3 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200">Ministry of Health</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-400 font-medium">Resource UUID:</span>
+                    <span id="test-meta-uuid" class="text-xs font-mono text-blue-600 font-bold bg-blue-50/80 px-2 py-0.5 rounded border border-blue-100 select-all">d1671266-80ce-47b5-874e-9afcd1bf6dd1</span>
+                    <button type="button" onclick="openTesterSchema()" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center space-x-1.5 cursor-pointer ml-2">
+                        <i class="fa-solid fa-sitemap"></i>
+                        <span>View Full Schema</span>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h3 id="test-meta-title" class="text-base md:text-lg font-bold text-slate-900 leading-snug">Annual Range-wise Performance of Public Facilities for Operation major of Haryana for 2014-15</h3>
+                <p id="test-meta-desc" class="text-xs text-slate-600 leading-relaxed font-medium mt-1">Annual Range-wise Performance of Public Facilities for Operation major (General and spinal anaesthesia) of Haryana for 2014-15</p>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <!-- Left: Request Builder & Live cURL Box -->
@@ -16,15 +39,11 @@
                     <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                         <div>
                             <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
-                                <i class="fa-solid fa-terminal text-blue-600"></i>
-                                <span>Live API Runner</span>
+                                <i class="fa-solid fa-sliders text-blue-600"></i>
+                                <span>Request Parameters</span>
                             </h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Test any Data.gov.in resource endpoint directly</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Customize queries, limits, offsets & formats</p>
                         </div>
-                        <button type="button" onclick="openTesterSchema()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer border border-blue-200 shadow-2xs" title="View dataset schema and columns">
-                            <i class="fa-solid fa-sitemap text-blue-600"></i>
-                            <span>View Schema</span>
-                        </button>
                     </div>
 
                     <form onsubmit="event.preventDefault(); runApiTest();" class="space-y-4">
@@ -39,16 +58,6 @@
                                 </button>
                             </div>
                             <input type="text" id="test-resource-id" required placeholder="e.g. 8d3b6596-b09e-4077-aebf-425193185a5b" oninput="onResourceIdChanged()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                        </div>
-
-                        <!-- Active API Title & Description Banner -->
-                        <div id="test-api-meta-card" class="p-4 rounded-xl bg-blue-50/70 border border-blue-100 space-y-2 transition">
-                            <div class="flex items-center justify-between">
-                                <span id="test-meta-sector" class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold uppercase tracking-wider">Health and Family Welfare</span>
-                                <span id="test-meta-org" class="text-[11px] text-slate-600 font-medium truncate max-w-[200px]">Ministry of Health</span>
-                            </div>
-                            <h4 id="test-meta-title" class="text-xs font-bold text-slate-900 leading-snug">Annual Range-wise Performance of Public Facilities for Operation major of Haryana for 2014-15</h4>
-                            <p id="test-meta-desc" class="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">Annual Range-wise Performance of Public Facilities for Operation major (General and spinal anaesthesia) of Haryana for 2014-15</p>
                         </div>
 
                         <!-- Smart Filter Parameters with Auto-Populated Columns -->
@@ -90,11 +99,11 @@
 
                         <!-- Action Buttons -->
                         <div class="pt-3 border-t border-slate-100 flex items-center space-x-3">
-                            <button type="submit" id="btn-run-test" class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/25 transition flex items-center justify-center space-x-2 cursor-pointer">
+                            <button type="submit" id="btn-run-test" class="flex-1 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/25 transition flex items-center justify-center space-x-2 cursor-pointer">
                                 <i class="fa-solid fa-play text-xs"></i>
                                 <span>Execute Request</span>
                             </button>
-                            <button type="button" onclick="openTesterSchema()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
+                            <button type="button" onclick="openTesterSchema()" class="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 transition flex items-center space-x-1.5 cursor-pointer">
                                 <i class="fa-solid fa-sitemap text-blue-600"></i>
                                 <span>Schema</span>
                             </button>
