@@ -46,6 +46,7 @@ public class ApiExplorerRestController {
     }
 
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Map<String, Object>> listResources(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sector,
