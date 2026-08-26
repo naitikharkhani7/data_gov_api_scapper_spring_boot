@@ -18,19 +18,27 @@ public interface ApiResourceRepository extends JpaRepository<ApiResourceEntity, 
 
     boolean existsByResourceId(String resourceId);
 
-    @Query("SELECT r FROM ApiResourceEntity r")
-    List<ApiResourceEntity> findPagedRecords(Pageable pageable);
+    @Query(value = "SELECT id FROM api_resources ORDER BY id DESC LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Long> findPagedIdsDesc(@Param("limit") int limit, @Param("offset") int offset);
 
-    @Query("SELECT r FROM ApiResourceEntity r WHERE " +
-           "(:search IS NULL OR LOWER(r.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           " LOWER(r.description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           " LOWER(r.resourceId) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           " LOWER(r.organizations) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
-           "(:sector IS NULL OR LOWER(r.sectors) LIKE LOWER(CONCAT('%', :sector, '%')))")
-    List<ApiResourceEntity> searchResourcesPaged(
+    @Query(value = "SELECT id FROM api_resources ORDER BY id ASC LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Long> findPagedIdsAsc(@Param("limit") int limit, @Param("offset") int offset);
+
+    @Query("SELECT r FROM ApiResourceEntity r WHERE r.id IN (:ids)")
+    List<ApiResourceEntity> findAllByIdInList(@Param("ids") List<Long> ids);
+
+    @Query(value = "SELECT id FROM api_resources WHERE " +
+           "(:search IS NULL OR LOWER(title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           " LOWER(description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           " LOWER(resource_id) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           " LOWER(organizations) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:sector IS NULL OR LOWER(sectors) LIKE LOWER(CONCAT('%', :sector, '%'))) " +
+           "ORDER BY id DESC LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Long> searchPagedIds(
             @Param("search") String search,
             @Param("sector") String sector,
-            Pageable pageable
+            @Param("limit") int limit,
+            @Param("offset") int offset
     );
 
     @Query("SELECT count(r) FROM ApiResourceEntity r WHERE " +

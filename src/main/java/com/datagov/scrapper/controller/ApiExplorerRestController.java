@@ -19,9 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/resources")
@@ -66,30 +69,44 @@ public class ApiExplorerRestController {
         String[] sortParts = sort.split(",");
         String sortProp = sortParts[0];
         Sort.Direction sortDir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortProp));
 
         boolean hasSearch = (search != null && !search.isBlank());
         boolean hasSector = (sector != null && !sector.isBlank() && !"ALL".equalsIgnoreCase(sector));
 
         log.info("[TIMER] ⏱️ Request received: page={}, size={}, search='{}', sector='{}'", page, size, search, sector);
 
-        List<ApiResourceEntity> content;
+        List<Long> ids;
         long totalElements;
 
+        int offset = page * size;
         long qStart = System.currentTimeMillis();
+
         if (hasSearch || hasSector) {
             String s = hasSearch ? search.trim() : null;
             String sec = hasSector ? sector.trim() : null;
-            content = apiResourceRepository.searchResourcesPaged(s, sec, pageable);
+            ids = apiResourceRepository.searchPagedIds(s, sec, size, offset);
             long qEnd = System.currentTimeMillis();
             totalElements = apiResourceRepository.countFiltered(s, sec);
             long cEnd = System.currentTimeMillis();
-            log.info("[TIMER] 🔍 Filtered DB query: {} items (took {} ms), count query (took {} ms)", content.size(), (qEnd - qStart), (cEnd - qEnd));
+            log.info("[TIMER] 🔍 Filtered IDs lookup: {} ids (took {} ms), count query (took {} ms)", ids.size(), (qEnd - qStart), (cEnd - qEnd));
         } else {
-            content = apiResourceRepository.findPagedRecords(pageable);
+            ids = (sortDir == Sort.Direction.ASC) ? 
+                    apiResourceRepository.findPagedIdsAsc(size, offset) : 
+                    apiResourceRepository.findPagedIdsDesc(size, offset);
             long qEnd = System.currentTimeMillis();
             totalElements = getTotalCountCached();
-            log.info("[TIMER] ⚡ Paged DB query: {} items (took {} ms)", content.size(), (qEnd - qStart));
+            log.info("[TIMER] ⚡ Index-Only IDs lookup: {} ids (took {} ms)", ids.size(), (qEnd - qStart));
+        }
+
+        List<ApiResourceEntity> content;
+        if (ids.isEmpty()) {
+            content = Collections.emptyList();
+        } else {
+            long fetchStart = System.currentTimeMillis();
+            List<ApiResourceEntity> rawList = apiResourceRepository.findAllByIdInList(ids);
+            Map<Long, ApiResourceEntity> map = rawList.stream().collect(Collectors.toMap(ApiResourceEntity::getId, e -> e, (a, b) -> a));
+            content = ids.stream().map(map::get).filter(Objects::nonNull).collect(Collectors.toList());
+            log.info("[TIMER] 📦 Hydrated {} full entity records in {} ms", content.size(), (System.currentTimeMillis() - fetchStart));
         }
 
         int totalPages = totalElements == 0 ? 1 : (int) Math.ceil((double) totalElements / size);
